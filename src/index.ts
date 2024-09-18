@@ -35,7 +35,7 @@ export class InformationSignal<UserPayload = InformationSignalRecord> {
    * @param resourceID the common topic for the GSOC records. It can be a hex string without 0x prefix to have it without conversation.
    * @returns close() function on websocket connection and GSOC address
    */
-  subscribe(messageHandler: SubscriptionHandler<UserPayload>, resourceId = DEFAULT_RESOURCE_ID): {
+  subscribe(messageHandler: SubscriptionHandler<UserPayload>, resourceId: string | Uint8Array = DEFAULT_RESOURCE_ID): {
     close: () => void
     gsocAddress: Bytes<32>
    } {
@@ -70,7 +70,7 @@ export class InformationSignal<UserPayload = InformationSignalRecord> {
   /**
    * Same as subscribe() method but with different name
    */
-  listen(messageHandler: SubscriptionHandler<UserPayload>, resourceId = DEFAULT_RESOURCE_ID): {
+  listen(messageHandler: SubscriptionHandler<UserPayload>, resourceId: string | Uint8Array = DEFAULT_RESOURCE_ID): {
     close: () => void
     gsocAddress: Bytes<32>
    } {

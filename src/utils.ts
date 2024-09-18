@@ -8,7 +8,10 @@ const UNCOMPRESSED_RECOVERY_ID = 27
 
 export const keccak256Hash = Utils.keccak256Hash
 
-export function getConsensualPrivateKey(resource: string): Bytes<32> {
+export function getConsensualPrivateKey(resource: string | Uint8Array): Bytes<32> {
+  if (isBytes(resource, 32)) {
+    return resource
+  }
   if (isHexString(resource) && resource.length === 64) {
     return hexToBytes<32>(resource)
   }
