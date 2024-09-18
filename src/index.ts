@@ -103,9 +103,9 @@ export class InformationSignal<UserPayload = InformationSignalRecord> {
     }
 
     const resourceId: Bytes<32> = new Uint8Array(32) as Bytes<32>
-    let graffitiSigner = makeSigner(resourceId)
-    let gsocAddress = makeSOCAddress(this.consensusHash, graffitiSigner.address)
-    while(!inProximity(beeAddress, gsocAddress, storageDepth)) {
+    let graffitiSigner: SignerFn
+    let gsocAddress: Bytes<32>
+    do {
       // increment array resourceID by one
       for (let i = 0; i < resourceId.length; i++) {
         if (resourceId[i] === 255) {
@@ -118,7 +118,7 @@ export class InformationSignal<UserPayload = InformationSignalRecord> {
 
       graffitiSigner = makeSigner(resourceId)
       gsocAddress = makeSOCAddress(this.consensusHash, graffitiSigner.address)
-    }
+    } while (!inProximity(beeAddress, gsocAddress, storageDepth))
 
     return { resourceId, gsocAddress: gsocAddress }
   }
