@@ -112,7 +112,7 @@ export class InformationSignal<UserPayload = InformationSignalRecord> {
    * @param storageDepth the depth of the storage on Swarm network
    * @returns mined resource ID and GSOC address
    */
-  mineResourceID(beeAddress: Uint8Array | HexString, storageDepth: number): { resourceId: Bytes<32>, gsocAddress: Bytes<32> } {
+  mineResourceId(beeAddress: Uint8Array | HexString, storageDepth: number): { resourceId: Bytes<32>, gsocAddress: Bytes<32> } {
     if(isHexString(beeAddress)) {
       beeAddress = hexToBytes(beeAddress)
     }
@@ -130,7 +130,7 @@ export class InformationSignal<UserPayload = InformationSignalRecord> {
     let graffitiSigner: SignerFn
     let gsocAddress: Bytes<32>
     do {
-      // increment array resourceID by one
+      // increment resourceId array by one
       for (let i = 0; i < resourceId.length; i++) {
         if (resourceId[i] === 255) {
           resourceId[i] = 0
