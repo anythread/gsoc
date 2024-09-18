@@ -107,7 +107,7 @@ export class InformationSignal<UserPayload = InformationSignalRecord> {
     let gsocAddress = makeSOCAddress(this.consensusHash, graffitiSigner.address)
     while(!inProximity(beeAddress, gsocAddress, storageDepth)) {
       // increment array resourceID by one
-      for (let i = 0; i < storageDepth; i++) {
+      for (let i = 0; i < resourceId.length; i++) {
         if (resourceId[i] === 255) {
           resourceId[i] = 0
         } else {
