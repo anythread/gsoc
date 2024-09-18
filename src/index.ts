@@ -1,7 +1,7 @@
 import { gsocSubscribe, SubscriptionHandler, uploadSingleOwnerChunkData } from "./http-client"
 import { makeSOCAddress, SingleOwnerChunk } from "./soc"
-import { Bytes, Data, Postage, SignerFn } from "./types"
-import { bytesToHex, getConsensualPrivateKey, inProximity, keccak256Hash, makeSigner, serializePayload } from "./utils"
+import { Bytes, Data, HexString, Postage, SignerFn } from "./types"
+import { bytesToHex, getConsensualPrivateKey, hexToBytes, inProximity, isHexString, keccak256Hash, makeSigner, serializePayload } from "./utils"
 
 export const DEFAULT_RESOURCE_ID = 'any'
 const DEFAULT_POSTAGE_BATCH_ID = '0000000000000000000000000000000000000000000000000000000000000000' as Postage
@@ -95,7 +95,10 @@ export class InformationSignal<UserPayload = InformationSignalRecord> {
    * @param storageDepth the depth of the storage on Swarm network
    * @returns mined resource ID and GSOC address
    */
-  mineResourceID(beeAddress: Uint8Array, storageDepth: number): { resourceId: Bytes<32>, gsocAddress: Bytes<32> } {
+  mineResourceID(beeAddress: Uint8Array | HexString, storageDepth: number): { resourceId: Bytes<32>, gsocAddress: Bytes<32> } {
+    if(isHexString(beeAddress)) {
+      beeAddress = hexToBytes(beeAddress)
+    }
     if (storageDepth > 32) {
       throw new Error('Storage depth cannot be greater than 32!')
     }
