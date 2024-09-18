@@ -112,6 +112,32 @@ export function makeSigner(signer: SignerFn | Uint8Array | string | unknown): Si
 }
 
 /**
+ * @notice Returns true if the segment A is within proximity order minimum of B
+ * @param a 32 bytes.
+ * @param b 32 bytes.
+ * @param minimum Minimum proximity order.
+ */
+export function inProximity(a: Uint8Array, b: Uint8Array, minimum: number): boolean {
+  if (a.length !== b.length || a.length !== 32) throw new Error('Lengths are incorrect at proximity check');
+
+  let byteIndex = 0;
+  let remaningBits = minimum;
+  while (remaningBits > 0) {
+    if (remaningBits >= 8) {
+      if (a[byteIndex] !== b[byteIndex]) return false;
+      byteIndex++;
+      remaningBits -= 8;
+    } else {
+      const aBits = a[byteIndex] >>> (8 - remaningBits);
+      const bBits = b[byteIndex] >>> (8 - remaningBits);
+      return aBits === bBits;
+    }
+  }
+
+  return true; // minimum === 0
+}
+
+/**
  * Type guard for `Bytes<T>` type
  *
  * @param b       The byte array
