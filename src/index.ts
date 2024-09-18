@@ -1,7 +1,7 @@
 import { gsocSubscribe, SubscriptionHandler, uploadSingleOwnerChunkData } from "./http-client"
 import { makeSOCAddress, SingleOwnerChunk } from "./soc"
 import { Bytes, Data, Postage, SignerFn } from "./types"
-import { bytesToHex, getConsensualPrivateKey, keccak256Hash, makeSigner, serializePayload } from "./utils"
+import { bytesToHex, getConsensualPrivateKey, inProximity, keccak256Hash, makeSigner, serializePayload } from "./utils"
 
 export const DEFAULT_RESOURCE_ID = 'any'
 const DEFAULT_POSTAGE_BATCH_ID = '0000000000000000000000000000000000000000000000000000000000000000' as Postage
@@ -79,6 +79,43 @@ export class InformationSignal<UserPayload = InformationSignalRecord> {
       this.consensusHash,
       serializePayload(data),
     )
+  }
+
+  /**
+   * Mine the resource ID respect to the given address of Bee node and storage depth
+   * so that the GSOC will fall within the neighborhood of the Bee node.
+   * 
+   * @param beeAddress Bee node 32 bytes address
+   * @param storageDepth the depth of the storage on Swarm network
+   * @returns mined resource ID and GSOC address
+   */
+  mineResourceID(beeAddress: Uint8Array, storageDepth: number): { resourceId: Bytes<32>, gsocAddress: Bytes<32> } {
+    if (storageDepth > 32) {
+      throw new Error('Storage depth cannot be greater than 32!')
+    }
+    if (beeAddress.length !== 32) {
+      throw new Error('Bee address has to be 32 bytes!')
+    }
+
+    const resourceId: Bytes<32> = new Uint8Array(32) as Bytes<32>
+    let graffitiSigner = makeSigner(resourceId)
+    let gsocAddress = makeSOCAddress(this.consensusHash, graffitiSigner.address)
+    while(!inProximity(beeAddress, gsocAddress, storageDepth)) {
+      // increment array resourceID by one
+      for (let i = 0; i < storageDepth; i++) {
+        if (resourceId[i] === 255) {
+          resourceId[i] = 0
+        } else {
+          resourceId[i]++
+          break
+        }
+      }
+
+      graffitiSigner = makeSigner(resourceId)
+      gsocAddress = makeSOCAddress(this.consensusHash, graffitiSigner.address)
+    }
+
+    return { resourceId, gsocAddress: gsocAddress }
   }
 }
 
