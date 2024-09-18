@@ -32,6 +32,7 @@ export class InformationSignal<UserPayload = InformationSignalRecord> {
    * This is because light nodes does not fully participate in the data exchange in Swarm network and hence the message won't arrive to them.
    * 
    * @param messageHandler hook function on newly received messages
+   * @param resourceID the common topic for the GSOC records. It can be a hex string without 0x prefix to have it without conversation.
    * @returns close() function on websocket connection and GSOC address
    */
   subscribe(messageHandler: SubscriptionHandler<UserPayload>, resourceId = DEFAULT_RESOURCE_ID): {
