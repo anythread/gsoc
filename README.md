@@ -61,7 +61,6 @@ const resourceId = 'demo' // any string/content hash that represents the resourc
 // initialize object that will read and write the GSOC according to the passed consensus/configuration
 const informationSignal = new InformationSignal(beeUrl, {
   postageBatchId,
-  resourceId,
   consensus: {
     id,
     assertRecord,
@@ -70,10 +69,10 @@ const informationSignal = new InformationSignal(beeUrl, {
 
 // subscribe to incoming topics on the receiver node
 // this will immediately invoge `onMessage` and `onError` function if the message arrives to the target neighborhood of the Kademlia network.
-const cancelSub = informationSignal.subscribe({onMessage: msg => console.log('my-life-event', msg), onError: console.log})
+const cancelSub = informationSignal.subscribe({onMessage: msg => console.log('my-life-event', msg), onError: console.log}, resourceId)
 
 // write GSOC record that satisfies the message format with the `write` method.
-const uploadedSoc = await informationSignal.write({ text: 'Hello there!', timestamp: 1721989685349 })
+const uploadedSoc = await informationSignal.write({ text: 'Hello there!', timestamp: 1721989685349 }, resourceId)
 ```
 
 # Compilation

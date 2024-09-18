@@ -16,7 +16,6 @@ export class InformationSignal<UserPayload = InformationSignalRecord> {
   /** Graffiti Identifier */
   private consensusHash: Bytes<32>
   private assertGraffitiRecord: (unknown: unknown) => asserts unknown is UserPayload
-  private graffitiSigner: SignerFn
 
   constructor(beeApiUrl: string, options?: BaseConstructorOptions<UserPayload>) {
     assertBeeUrl(beeApiUrl)
@@ -24,9 +23,6 @@ export class InformationSignal<UserPayload = InformationSignalRecord> {
     this.postageBatchId = options?.postageBatchId ?? DEFAULT_POSTAGE_BATCH_ID
     this.assertGraffitiRecord = options?.consensus?.assertRecord ?? assertInformationSignalRecord
     this.consensusHash = keccak256Hash(options?.consensus?.id ?? DEFAULT_CONSENSUS_ID)
-    const resourceId = options?.resourceId ?? DEFAULT_RESOURCE_ID
-    const graffitiKey = getConsensualPrivateKey(resourceId)
-    this.graffitiSigner = makeSigner(graffitiKey) 
   }
 
   /**
@@ -38,7 +34,7 @@ export class InformationSignal<UserPayload = InformationSignalRecord> {
    * @param messageHandler hook function on newly received messages
    * @returns close() function on websocket connection and GSOC address
    */
-  subscribe(messageHandler: SubscriptionHandler<UserPayload>, resourceId: string = DEFAULT_RESOURCE_ID): {
+  subscribe(messageHandler: SubscriptionHandler<UserPayload>, resourceId = DEFAULT_RESOURCE_ID): {
     close: () => void
     gsocAddress: Bytes<32>
    } {
@@ -70,12 +66,21 @@ export class InformationSignal<UserPayload = InformationSignalRecord> {
     }
   }
 
-  write(data: UserPayload): Promise<SingleOwnerChunk> {
+  /**
+   * Write GSOC and upload to the Swarm network
+   * 
+   * @param data GSOC payload
+   * @param resourceID the common topic for the GSOC records. It can be a hex string without 0x prefix to have it without conversation.
+   */
+  write(data: UserPayload, resourceId = DEFAULT_RESOURCE_ID): Promise<SingleOwnerChunk> {
     this.assertGraffitiRecord(data)
+    const graffitiKey = getConsensualPrivateKey(resourceId)
+    const graffitiSigner = makeSigner(graffitiKey) 
+
     return uploadSingleOwnerChunkData(
       { baseURL: this.beeApiUrl },
       this.postageBatchId,
-      this.graffitiSigner,
+      graffitiSigner,
       this.consensusHash,
       serializePayload(data),
     )
@@ -187,13 +192,6 @@ interface BaseConstructorOptions<T = InformationSignalRecord> {
      */
     assertRecord: (unknown: unknown) => asserts unknown is T
   }
-  /**
-   * the common topic for the GSOC records.
-   * From this the graffiti private key will be constructed.
-   * It can be a hex string without 0x prefix to have it without conversation.
-   * Default: 'any'
-   */
-  resourceId?: string
   /**
    * Swarm Postage Batch ID which is only required when write happens
    * Default: 000000000000000000000000000000000000000000000
