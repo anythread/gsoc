@@ -36,11 +36,15 @@ export class InformationSignal<UserPayload = InformationSignalRecord> {
    * This is because light nodes does not fully participate in the data exchange in Swarm network and hence the message won't arrive to them.
    * 
    * @param messageHandler hook function on newly received messages
-   * @returns close() function on websocket connection
+   * @returns close() function on websocket connection and GSOC address
    */
-  subscribe(messageHandler: SubscriptionHandler<UserPayload>, resourceId: string = DEFAULT_RESOURCE_ID): () => void {
+  subscribe(messageHandler: SubscriptionHandler<UserPayload>, resourceId: string = DEFAULT_RESOURCE_ID): {
+    close: () => void
+    gsocAddress: Bytes<32>
+   } {
     const graffitiKey = getConsensualPrivateKey(resourceId)
     const graffitiSigner = makeSigner(graffitiKey)
+    const gsocAddress = makeSOCAddress(this.consensusHash, graffitiSigner.address)
   
     const insiderHandler = {
       onMessage: (data: Data) => {
@@ -56,11 +60,14 @@ export class InformationSignal<UserPayload = InformationSignalRecord> {
     }
     const close = gsocSubscribe(
       this.beeApiUrl,
-      bytesToHex(makeSOCAddress(this.consensusHash, this.graffitiSigner.address)),
+      bytesToHex(gsocAddress),
       insiderHandler
     )
 
-    return close
+    return {
+      close,
+      gsocAddress,
+    }
   }
 
   write(data: UserPayload): Promise<SingleOwnerChunk> {
