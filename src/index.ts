@@ -98,6 +98,13 @@ export class InformationSignal<UserPayload = InformationSignalRecord> {
   }
 
   /**
+   * Same as write() method but with different name
+   */
+  send(data: UserPayload, resourceId = DEFAULT_RESOURCE_ID): Promise<SingleOwnerChunk> {
+    return this.write(data, resourceId)
+  }
+
+  /**
    * Mine the resource ID respect to the given address of Bee node and storage depth
    * so that the GSOC will fall within the neighborhood of the Bee node.
    * 
