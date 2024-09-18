@@ -54,9 +54,9 @@ Information Signal class facilitates GSOC data reading based on the passed conse
 ```ts
 import { InformationSignal } from '@anythread/gsoc'
 
-const beeUrl = 'http://localhost:1633' // Bee API URL to connect p2p storage network
-const postageBatchId = '0000000000000000000000000000000000000000000000000000000000000000' // for write operations, the Postage Batch ID must be set.
-const resourceId = 'demo' // any string/content hash that represents the resource to which the Personal Storage record will be associated. 
+beeUrl = 'http://localhost:1633' // Bee API URL to connect p2p storage network
+postageBatchId = '0000000000000000000000000000000000000000000000000000000000000000' // for write operations, the Postage Batch ID must be set.
+resourceId = 'demo' // any string/content hash that represents the resource to which the Personal Storage record will be associated.
 
 // initialize object that will read and write the GSOC according to the passed consensus/configuration
 const informationSignal = new InformationSignal(beeUrl, {
@@ -67,12 +67,16 @@ const informationSignal = new InformationSignal(beeUrl, {
   },
 })
 
+// it is also possible to mine the resourceId to the desired Bee node to ensure they will get the message as soon as possible on the forwarding Kademlia network
+targetBeeOverlayAddress = 'b0baf37700000000000000000000000000000000000000000000000000000000'
+{ resourceId } = informationSignal.mine(targetBeeOverlayAddress, 16)
+
 // subscribe to incoming topics on the receiver node
 // this will immediately invoge `onMessage` and `onError` function if the message arrives to the target neighborhood of the Kademlia network.
-const cancelSub = informationSignal.subscribe({onMessage: msg => console.log('my-life-event', msg), onError: console.log}, resourceId)
+cancelSub = informationSignal.subscribe({onMessage: msg => console.log('my-life-event', msg), onError: console.log}, resourceId)
 
 // write GSOC record that satisfies the message format with the `write` method.
-const uploadedSoc = await informationSignal.write({ text: 'Hello there!', timestamp: 1721989685349 }, resourceId)
+uploadedSoc = await informationSignal.write({ text: 'Hello there!', timestamp: 1721989685349 }, resourceId)
 ```
 
 # Compilation

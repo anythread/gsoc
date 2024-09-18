@@ -146,6 +146,13 @@ export class InformationSignal<UserPayload = InformationSignalRecord> {
 
     return { resourceId, gsocAddress: gsocAddress }
   }
+
+  /**
+   * Same as mineResourceId() method but with different name
+   */
+  mine(beeAddress: Uint8Array | HexString, storageDepth: number): { resourceId: Bytes<32>, gsocAddress: Bytes<32> } {
+    return this.mineResourceId(beeAddress, storageDepth)
+  }
 }
 
 /**
