@@ -59,7 +59,7 @@ postageBatchId = '00000000000000000000000000000000000000000000000000000000000000
 resourceId = 'demo' // any string/content hash that represents the resource to which the Personal Storage record will be associated.
 
 // initialize object that will read and write the GSOC according to the passed consensus/configuration
-const informationSignal = new InformationSignal(beeUrl, {
+informationSignal = new InformationSignal(beeUrl, {
   postageBatchId,
   consensus: {
     id,
