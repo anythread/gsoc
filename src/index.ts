@@ -68,6 +68,16 @@ export class InformationSignal<UserPayload = InformationSignalRecord> {
   }
 
   /**
+   * Same as subscribe() method but with different name
+   */
+  listen(messageHandler: SubscriptionHandler<UserPayload>, resourceId = DEFAULT_RESOURCE_ID): {
+    close: () => void
+    gsocAddress: Bytes<32>
+   } {
+    return this.subscribe(messageHandler, resourceId)
+  }
+
+  /**
    * Write GSOC and upload to the Swarm network
    * 
    * @param data GSOC payload
