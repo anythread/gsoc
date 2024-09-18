@@ -116,6 +116,9 @@ export class InformationSignal<UserPayload = InformationSignalRecord> {
     if(isHexString(beeAddress)) {
       beeAddress = hexToBytes(beeAddress)
     }
+    if(typeof storageDepth !== 'number') {
+      throw new Error('storageDepth argument must be a number')
+    }
     if (storageDepth > 32) {
       throw new Error('Storage depth cannot be greater than 32!')
     }
