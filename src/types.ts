@@ -78,3 +78,36 @@ export interface Data extends Uint8Array {
   json(): Record<string, unknown>
 }
 
+/**
+ * Options for creation of postage batch
+ */
+export interface PostageBatchOptions {
+  /**
+   * Sets label for the postage batch
+   */
+  label?: string
+
+  /**
+   * Sets gas price in Wei for the transaction that creates the postage batch
+   */
+  gasPrice?: string
+  immutableFlag?: boolean
+
+  /**
+   * The returned Promise will await until the purchased Postage Batch is usable.
+   * In other word, it has to have enough block confirmations that Bee pronounce it usable.
+   * When turned on, this significantly prolongs the creation of postage batch!
+   *
+   * If you plan to use the stamp right away for some action with Bee (like uploading using this stamp) it is
+   * highly recommended to use this option, otherwise you might get errors "stamp not usable" from Bee.
+   *
+   * @default true
+   */
+  waitForUsable?: boolean
+
+  /**
+   * When waiting for the postage stamp to become usable, this specify the timeout for the waiting.
+   * Default: 120s
+   */
+  waitForUsableTimeout?: number
+}

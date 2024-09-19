@@ -1,6 +1,6 @@
 import { makeChunk } from "@fairdatasociety/bmt-js"
 import WebSocket from 'isomorphic-ws'
-import { Bytes, Data, Postage, Reference, SignerFn } from "./types"
+import { Bytes, Data, Postage, PostageBatchOptions, Reference, SignerFn } from "./types"
 import { makeSingleOwnerChunk, SingleOwnerChunk } from "./soc"
 import { bytesToHex, isStrictlyObject, serializeBytes, wrapBytesWithHelpers } from "./utils"
 import axios, { AxiosAdapter, AxiosError, AxiosRequestConfig, AxiosResponse } from "axios"
@@ -113,6 +113,37 @@ async function uploadSoc(
   return response.data.reference
 }
 
+/**
+ * create postage batch
+ * @returns postage batch id
+ */
+export async function createPostageBatch(
+  requestOptions: BeeRequestOptions,
+  amount: string,
+  depth: number,
+  options?: PostageBatchOptions,
+): Promise<string> {
+  const headers: Record<string, string> = requestOptions.headers || {}
+  if (options?.gasPrice) {
+    headers['gas-price'] = options.gasPrice.toString()
+  }
+  if (options?.immutableFlag !== undefined) {
+    headers.immutable = String(options.immutableFlag)
+  }
+
+  const response = await http<{ batchID: string }>({
+    ...requestOptions,
+    method: 'post',
+    url: `stamps/${amount}/${depth}`,
+    responseType: 'json',
+    params: { label: options?.label },
+    headers
+  })
+
+  return response.data.batchID
+
+}
+
 function assertSubscriptionHandler(value: unknown): asserts value is SubscriptionHandler {
   if (!isStrictlyObject(value)) {
     throw new TypeError('SubscriptionHandler has to be object!')
@@ -217,7 +248,7 @@ export interface SubscriptionHandler<T = Data> {
   onError: (error: Error) => void
 }
 
-type BeeRequestOptions = {
+export type BeeRequestOptions = {
   baseURL?: string
   timeout?: number
   retry?: number | false
