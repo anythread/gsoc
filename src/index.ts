@@ -1,7 +1,16 @@
-import { gsocSubscribe, SubscriptionHandler, uploadSingleOwnerChunkData } from "./http-client"
-import { makeSOCAddress, SingleOwnerChunk } from "./soc"
-import { Bytes, Data, HexString, Postage, SignerFn } from "./types"
-import { bytesToHex, getConsensualPrivateKey, hexToBytes, inProximity, isHexString, keccak256Hash, makeSigner, serializePayload } from "./utils"
+import { gsocSubscribe, SubscriptionHandler, uploadSingleOwnerChunkData } from './http-client'
+import { makeSOCAddress, SingleOwnerChunk } from './soc'
+import { Bytes, Data, HexString, Postage, SignerFn } from './types'
+import {
+  bytesToHex,
+  getConsensualPrivateKey,
+  hexToBytes,
+  inProximity,
+  isHexString,
+  keccak256Hash,
+  makeSigner,
+  serializePayload,
+} from './utils'
 
 export const DEFAULT_RESOURCE_ID = 'any'
 const DEFAULT_POSTAGE_BATCH_ID = '0000000000000000000000000000000000000000000000000000000000000000' as Postage
@@ -20,9 +29,13 @@ export class InformationSignal<UserPayload = InformationSignalRecord> {
   constructor(beeApiUrl: string, options?: BaseConstructorOptions<UserPayload>) {
     assertBeeUrl(beeApiUrl)
     this.beeApiUrl = beeApiUrl
-    this.postageBatchId = options?.postageBatchId ?? DEFAULT_POSTAGE_BATCH_ID
+    this.postageBatchId = (options?.postageBatchId ?? DEFAULT_POSTAGE_BATCH_ID) as Postage
     this.assertGraffitiRecord = options?.consensus?.assertRecord ?? assertInformationSignalRecord
     this.consensusHash = keccak256Hash(options?.consensus?.id ?? DEFAULT_CONSENSUS_ID)
+
+    if (!isHexString(options?.postageBatchId)) {
+      throw new Error('Postage batch ID has to be a hex string!')
+    }
   }
 
   /**
@@ -30,36 +43,35 @@ export class InformationSignal<UserPayload = InformationSignalRecord> {
    *
    * **Warning! If connected Bee node is a light node, then it will never receive any message!**
    * This is because light nodes does not fully participate in the data exchange in Swarm network and hence the message won't arrive to them.
-   * 
+   *
    * @param messageHandler hook function on newly received messages
    * @param resourceID the common topic for the GSOC records. It can be a hex string without 0x prefix to have it without conversation.
    * @returns close() function on websocket connection and GSOC address
    */
-  subscribe(messageHandler: SubscriptionHandler<UserPayload>, resourceId: string | Uint8Array = DEFAULT_RESOURCE_ID): {
+  subscribe(
+    messageHandler: SubscriptionHandler<UserPayload>,
+    resourceId: string | Uint8Array = DEFAULT_RESOURCE_ID,
+  ): {
     close: () => void
     gsocAddress: Bytes<32>
-   } {
+  } {
     const graffitiKey = getConsensualPrivateKey(resourceId)
     const graffitiSigner = makeSigner(graffitiKey)
     const gsocAddress = makeSOCAddress(this.consensusHash, graffitiSigner.address)
-  
+
     const insiderHandler = {
       onMessage: (data: Data) => {
-        try{
+        try {
           const json = data.json()
           this.assertGraffitiRecord(json)
           messageHandler.onMessage(json)
-        } catch(e) {
+        } catch (e) {
           messageHandler.onError(e as Error)
         }
       },
-      onError: messageHandler.onError
+      onError: messageHandler.onError,
     }
-    const close = gsocSubscribe(
-      this.beeApiUrl,
-      bytesToHex(gsocAddress),
-      insiderHandler
-    )
+    const close = gsocSubscribe(this.beeApiUrl, bytesToHex(gsocAddress), insiderHandler)
 
     return {
       close,
@@ -70,23 +82,29 @@ export class InformationSignal<UserPayload = InformationSignalRecord> {
   /**
    * Same as subscribe() method but with different name
    */
-  listen(messageHandler: SubscriptionHandler<UserPayload>, resourceId: string | Uint8Array = DEFAULT_RESOURCE_ID): {
+  listen(
+    messageHandler: SubscriptionHandler<UserPayload>,
+    resourceId: string | Uint8Array = DEFAULT_RESOURCE_ID,
+  ): {
     close: () => void
     gsocAddress: Bytes<32>
-   } {
+  } {
     return this.subscribe(messageHandler, resourceId)
   }
 
   /**
    * Write GSOC and upload to the Swarm network
-   * 
+   *
    * @param data GSOC payload
    * @param resourceID the common topic for the GSOC records. It can be a hex string without 0x prefix to have it without conversation.
    */
-  write(data: UserPayload, resourceId = DEFAULT_RESOURCE_ID): Promise<SingleOwnerChunk> {
+  async write(
+    data: UserPayload,
+    resourceId: string | Uint8Array = DEFAULT_RESOURCE_ID,
+  ): Promise<SingleOwnerChunk> {
     this.assertGraffitiRecord(data)
     const graffitiKey = getConsensualPrivateKey(resourceId)
-    const graffitiSigner = makeSigner(graffitiKey) 
+    const graffitiSigner = makeSigner(graffitiKey)
 
     return uploadSingleOwnerChunkData(
       { baseURL: this.beeApiUrl },
@@ -100,23 +118,29 @@ export class InformationSignal<UserPayload = InformationSignalRecord> {
   /**
    * Same as write() method but with different name
    */
-  send(data: UserPayload, resourceId = DEFAULT_RESOURCE_ID): Promise<SingleOwnerChunk> {
+  async send(
+    data: UserPayload,
+    resourceId: string | Uint8Array = DEFAULT_RESOURCE_ID,
+  ): Promise<SingleOwnerChunk> {
     return this.write(data, resourceId)
   }
 
   /**
    * Mine the resource ID respect to the given address of Bee node and storage depth
    * so that the GSOC will fall within the neighborhood of the Bee node.
-   * 
+   *
    * @param beeAddress Bee node 32 bytes address
    * @param storageDepth the depth of the storage on Swarm network
    * @returns mined resource ID and GSOC address
    */
-  mineResourceId(beeAddress: Uint8Array | HexString, storageDepth: number): { resourceId: Bytes<32>, gsocAddress: Bytes<32> } {
-    if(isHexString(beeAddress)) {
+  mineResourceId(
+    beeAddress: Uint8Array | HexString,
+    storageDepth: number,
+  ): { resourceId: Bytes<32>; gsocAddress: Bytes<32> } {
+    if (isHexString(beeAddress)) {
       beeAddress = hexToBytes(beeAddress)
     }
-    if(typeof storageDepth !== 'number') {
+    if (typeof storageDepth !== 'number') {
       throw new Error('storageDepth argument must be a number')
     }
     if (storageDepth > 32) {
@@ -150,7 +174,10 @@ export class InformationSignal<UserPayload = InformationSignalRecord> {
   /**
    * Same as mineResourceId() method but with different name
    */
-  mine(beeAddress: Uint8Array | HexString, storageDepth: number): { resourceId: Bytes<32>, gsocAddress: Bytes<32> } {
+  mine(
+    beeAddress: Uint8Array | HexString,
+    storageDepth: number,
+  ): { resourceId: Bytes<32>; gsocAddress: Bytes<32> } {
     return this.mineResourceId(beeAddress, storageDepth)
   }
 }
@@ -185,7 +212,7 @@ function isValidBeeUrl(url: unknown): url is URL {
     return urlObject.protocol === 'http:' || urlObject.protocol === 'https:'
   } catch (e) {
     // URL constructor throws TypeError if not valid URL
-    if (e instanceof TypeError || (e as any).code !== null && (e as any).code === 'ERR_INVALID_URL') {
+    if (e instanceof TypeError || ((e as any).code !== null && (e as any).code === 'ERR_INVALID_URL')) {
       return false
     }
 
@@ -227,7 +254,7 @@ interface BaseConstructorOptions<T = InformationSignalRecord> {
    * Swarm Postage Batch ID which is only required when write happens
    * Default: 000000000000000000000000000000000000000000000
    */
-  postageBatchId?: Postage
+  postageBatchId?: string
   /**
    * API Url of the Ethereum Swarm Bee client
    * Default: http://localhost:1633

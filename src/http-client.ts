@@ -1,9 +1,9 @@
-import { makeChunk } from "@fairdatasociety/bmt-js"
+import { makeChunk } from '@fairdatasociety/bmt-js'
 import WebSocket from 'isomorphic-ws'
-import { Bytes, Data, Postage, PostageBatchOptions, Reference, SignerFn } from "./types"
-import { makeSingleOwnerChunk, SingleOwnerChunk } from "./soc"
-import { bytesToHex, isStrictlyObject, serializeBytes, wrapBytesWithHelpers } from "./utils"
-import axios, { AxiosAdapter, AxiosError, AxiosRequestConfig, AxiosResponse } from "axios"
+import { Bytes, Data, Postage, PostageBatchOptions, Reference, SignerFn } from './types'
+import { makeSingleOwnerChunk, SingleOwnerChunk } from './soc'
+import { bytesToHex, isStrictlyObject, serializeBytes, wrapBytesWithHelpers } from './utils'
+import axios, { AxiosAdapter, AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios'
 
 /**
  * Helper function to create and upload SOC.
@@ -25,18 +25,18 @@ export async function uploadSingleOwnerChunkData(
   const data = serializeBytes(soc.span(), soc.payload)
 
   await uploadSoc(requestOptions, owner, id, signature, data, postageBatchId, options)
-  
+
   return soc
 }
 
 /**
-   * Subscribe to messages for given topic with GSOC
-   *
-   * @param address SOC address under which payloads 
-   * @param handler Message handler interface
-   *
-   * @returns close() function on websocket connection
-   */
+ * Subscribe to messages for given topic with GSOC
+ *
+ * @param address SOC address under which payloads
+ * @param handler Message handler interface
+ *
+ * @returns close() function on websocket connection
+ */
 export function gsocSubscribe(baseUrl: string, address: string, handler: SubscriptionHandler): () => void {
   assertSubscriptionHandler(handler)
 
@@ -87,7 +87,7 @@ export function gsocSubscribe(baseUrl: string, address: string, handler: Subscri
  * @param data            Content addressed chunk data to be uploaded
  * @param postageBatchId  Postage BatchId that will be assigned to uploaded data
  * @param options         Additional options like tag, encryption, pinning
-*/
+ */
 async function uploadSoc(
   requestOptions: BeeRequestOptions,
   owner: string,
@@ -137,11 +137,10 @@ export async function createPostageBatch(
     url: `stamps/${amount}/${depth}`,
     responseType: 'json',
     params: { label: options?.label },
-    headers
+    headers,
   })
 
   return response.data.batchID
-
 }
 
 function assertSubscriptionHandler(value: unknown): asserts value is SubscriptionHandler {
@@ -177,7 +176,7 @@ function prepareWebsocketData(data: unknown): Uint8Array | never {
  * @param topic Topic name
  */
 function webSocket(url: string, path: string): WebSocket {
-  const wsUrl = url.replace(/^http/i, 'ws') 
+  const wsUrl = url.replace(/^http/i, 'ws')
 
   return new WebSocket(`${wsUrl}/${path}`)
 }
@@ -219,13 +218,21 @@ async function http<T>(config: AxiosRequestConfig): Promise<AxiosResponse<T>> {
   try {
     config.headers ||= {}
     config.headers = { ...DEFAULT_HTTP_CONFIG.headers, ...config.headers }
-    
+
     const response = await axios(config)
 
     return response as AxiosResponse<T>
   } catch (e: unknown) {
     if (e instanceof AxiosError) {
-      throw new BeeResponseError(e.message, e.code, e.status, e.response?.status, e.config, e.request, e.response)
+      throw new BeeResponseError(
+        e.message,
+        e.code,
+        e.status,
+        e.response?.status,
+        e.config,
+        e.request,
+        e.response,
+      )
     }
     throw e
   }
@@ -233,7 +240,7 @@ async function http<T>(config: AxiosRequestConfig): Promise<AxiosResponse<T>> {
 
 const DEFAULT_HTTP_CONFIG: AxiosRequestConfig = {
   headers: {
-      accept: 'application/json, text/plain, */*',
+    accept: 'application/json, text/plain, */*',
   },
   maxBodyLength: Infinity,
   maxContentLength: Infinity,
@@ -302,20 +309,20 @@ interface UploadOptions {
 
 class BeeError extends Error {
   public constructor(message: string) {
-      super(message)
+    super(message)
   }
 }
 
 class BeeResponseError extends BeeError {
   public constructor(
-      message: string,
-      public code?: string,
-      public axiosStatus?: number,
-      public status?: number,
-      public config?: AxiosRequestConfig,
-      public request?: any,
-      public response?: AxiosResponse,
+    message: string,
+    public code?: string,
+    public axiosStatus?: number,
+    public status?: number,
+    public config?: AxiosRequestConfig,
+    public request?: any,
+    public response?: AxiosResponse,
   ) {
-      super(message)
+    super(message)
   }
 }

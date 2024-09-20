@@ -1,4 +1,4 @@
-import { Bytes, Data, EthAddress, HexString, PrefixedHexString, SignerFn } from './types'
+import { Bytes, Data, HexString, PrefixedHexString, SignerFn } from './types'
 import { Utils } from '@fairdatasociety/bmt-js'
 // For ESM compatibility
 import pkg from 'elliptic'
@@ -121,23 +121,24 @@ export function makeSigner(signer: SignerFn | Uint8Array | string | unknown): Si
  * @param minimum Minimum proximity order.
  */
 export function inProximity(a: Uint8Array, b: Uint8Array, minimum: number): boolean {
-  if (a.length !== b.length || a.length !== 32) throw new Error('Lengths are incorrect at proximity check');
+  if (a.length !== b.length || a.length !== 32) throw new Error('Lengths are incorrect at proximity check')
 
-  let byteIndex = 0;
-  let remaningBits = minimum;
+  let byteIndex = 0
+  let remaningBits = minimum
   while (remaningBits > 0) {
     if (remaningBits >= 8) {
-      if (a[byteIndex] !== b[byteIndex]) return false;
-      byteIndex++;
-      remaningBits -= 8;
+      if (a[byteIndex] !== b[byteIndex]) return false
+      byteIndex++
+      remaningBits -= 8
     } else {
-      const aBits = a[byteIndex] >>> (8 - remaningBits);
-      const bBits = b[byteIndex] >>> (8 - remaningBits);
-      return aBits === bBits;
+      const aBits = a[byteIndex] >>> (8 - remaningBits)
+      const bBits = b[byteIndex] >>> (8 - remaningBits)
+
+      return aBits === bBits
     }
   }
 
-  return true; // minimum === 0
+  return true // minimum === 0
 }
 
 /**
@@ -168,15 +169,15 @@ export function assertBytes<Length extends number>(b: unknown, length: Length): 
  * @param arrays Any number of byte array arguments
  */
 export function serializeBytes(...arrays: Uint8Array[]): Uint8Array {
-    const length = arrays.reduce((prev, curr) => prev + curr.length, 0)
-    const buffer = new Uint8Array(length)
-    let offset = 0
-    arrays.forEach(arr => {
-      buffer.set(arr, offset)
-      offset += arr.length
-    })
-  
-    return buffer
+  const length = arrays.reduce((prev, curr) => prev + curr.length, 0)
+  const buffer = new Uint8Array(length)
+  let offset = 0
+  arrays.forEach(arr => {
+    buffer.set(arr, offset)
+    offset += arr.length
+  })
+
+  return buffer
 }
 
 /**
@@ -185,7 +186,10 @@ export function serializeBytes(...arrays: Uint8Array[]): Uint8Array {
  * @param bytes   The input array
  * @param len     The length of the non prefixed HexString
  */
-export function bytesToHex<Length extends number = number>(bytes: Uint8Array, len?: Length): HexString<Length> {
+export function bytesToHex<Length extends number = number>(
+  bytes: Uint8Array,
+  len?: Length,
+): HexString<Length> {
   const hexByte = (n: number) => n.toString(16).padStart(2, '0')
   const hex = Array.from(bytes, hexByte).join('') as HexString<Length>
 
@@ -205,18 +209,18 @@ export function bytesToHex<Length extends number = number>(bytes: Uint8Array, le
  * @param len     The length of the non prefixed HexString
  */
 export function intToHex<Length extends number = number>(int: number, len?: Length): HexString<Length> {
-    if (!Number.isInteger(int)) throw new TypeError('the value provided is not integer')
-  
-    if (int > Number.MAX_SAFE_INTEGER) throw new TypeError('the value provided exceeds safe integer')
-  
-    if (int < 0) throw new TypeError('the value provided is a negative integer')
-    const hex = int.toString(16) as HexString<Length>
-  
-    if (len && hex.length !== len) {
-      throw new TypeError(`Resulting HexString does not have expected length ${len}: ${hex}`)
-    }
-  
-    return hex
+  if (!Number.isInteger(int)) throw new TypeError('the value provided is not integer')
+
+  if (int > Number.MAX_SAFE_INTEGER) throw new TypeError('the value provided exceeds safe integer')
+
+  if (int < 0) throw new TypeError('the value provided is a negative integer')
+  const hex = int.toString(16) as HexString<Length>
+
+  if (len && hex.length !== len) {
+    throw new TypeError(`Resulting HexString does not have expected length ${len}: ${hex}`)
+  }
+
+  return hex
 }
 
 /**
@@ -225,19 +229,18 @@ export function intToHex<Length extends number = number>(int: number, len?: Leng
  * @param hex string input without 0x prefix!
  */
 export function hexToBytes<Length extends number, LengthHex extends number = number>(
-    hex: HexString<LengthHex>,
-  ): Bytes<Length> {
-    assertHexString(hex)
-  
-    const bytes = new Uint8Array(hex.length / 2)
-    for (let i = 0; i < bytes.length; i++) {
-      const hexByte = hex.substr(i * 2, 2)
-      bytes[i] = parseInt(hexByte, 16)
-    }
-  
-    return bytes as Bytes<Length>
+  hex: HexString<LengthHex>,
+): Bytes<Length> {
+  assertHexString(hex)
+
+  const bytes = new Uint8Array(hex.length / 2)
+  for (let i = 0; i < bytes.length; i++) {
+    const hexByte = hex.substr(i * 2, 2)
+    bytes[i] = parseInt(hexByte, 16)
   }
-  
+
+  return bytes as Bytes<Length>
+}
 
 /**
  * Type guard for HexStrings.
@@ -246,18 +249,21 @@ export function hexToBytes<Length extends number, LengthHex extends number = num
  * @param s string input
  * @param len expected length of the HexString
  */
-export function isHexString<Length extends number = number>(s: unknown, len?: number): s is HexString<Length> {
-    return typeof s === 'string' && /^[0-9a-f]+$/i.test(s) && (!len || s.length === len)
+export function isHexString<Length extends number = number>(
+  s: unknown,
+  len?: number,
+): s is HexString<Length> {
+  return typeof s === 'string' && /^[0-9a-f]+$/i.test(s) && (!len || s.length === len)
 }
-  
-  /**
-   * Type guard for PrefixedHexStrings.
-   * Does enforce presence of 0x prefix!
-   *
-   * @param s string input
-   */
+
+/**
+ * Type guard for PrefixedHexStrings.
+ * Does enforce presence of 0x prefix!
+ *
+ * @param s string input
+ */
 export function isPrefixedHexString(s: unknown): s is PrefixedHexString {
-    return typeof s === 'string' && /^0x[0-9a-f]+$/i.test(s)
+  return typeof s === 'string' && /^0x[0-9a-f]+$/i.test(s)
 }
 
 export function serializePayload(userPayload: unknown): Uint8Array {
@@ -265,27 +271,27 @@ export function serializePayload(userPayload: unknown): Uint8Array {
 }
 
 export function deserializePayload(data: Uint8Array): unknown {
-  try { 
+  try {
     return JSON.parse(new TextDecoder().decode(data))
-  } catch(e) {
-    throw new Error("Cannot deserialize JSON data")
+  } catch (e) {
+    throw new Error('Cannot deserialize JSON data')
   }
 }
 
 function assertHexString<Length extends number = number>(
-    s: unknown,
-    len?: number,
-    name = 'value',
+  s: unknown,
+  len?: number,
+  name = 'value',
 ): asserts s is HexString<Length> {
-    if (!isHexString(s, len)) {
-      if (isPrefixedHexString(s)) {
-        throw new TypeError(`${name} not valid non prefixed hex string (has 0x prefix): ${s}`)
-      }
-  
-      // Don't display length error if no length specified in order not to confuse user
-      const lengthMsg = len ? ` of length ${len}` : ''
-      throw new TypeError(`${name} not valid hex string${lengthMsg}: ${s}`)
+  if (!isHexString(s, len)) {
+    if (isPrefixedHexString(s)) {
+      throw new TypeError(`${name} not valid non prefixed hex string (has 0x prefix): ${s}`)
     }
+
+    // Don't display length error if no length specified in order not to confuse user
+    const lengthMsg = len ? ` of length ${len}` : ''
+    throw new TypeError(`${name} not valid hex string${lengthMsg}: ${s}`)
+  }
 }
 
 /**
@@ -294,35 +300,38 @@ function assertHexString<Length extends number = number>(
  * @param input
  * @param len of the resulting HexString WITHOUT prefix!
  */
-export function makeHexString<L extends number>(input: string | number | Uint8Array | unknown, len?: L): HexString<L> {
-    if (typeof input === 'number') {
-      return intToHex<L>(input, len)
-    }
-  
-    if (input instanceof Uint8Array) {
-      return bytesToHex<L>(input, len)
-    }
-  
-    if (typeof input === 'string') {
-      if (isPrefixedHexString(input)) {
-        const hex = input.slice(2) as HexString<L>
-  
-        if (len && hex.length !== len) {
-          throw new TypeError(`Length mismatch for valid hex string. Expecting length ${len}: ${hex}`)
-        }
-  
-        return hex
-      } else {
-        // We use assertHexString() as there might be more reasons why a string is not valid hex string
-        // and usage of isHexString() would not give enough information to the user on what is going
-        // wrong.
-        assertHexString<L>(input, len)
-  
-        return input
+export function makeHexString<L extends number>(
+  input: string | number | Uint8Array | unknown,
+  len?: L,
+): HexString<L> {
+  if (typeof input === 'number') {
+    return intToHex<L>(input, len)
+  }
+
+  if (input instanceof Uint8Array) {
+    return bytesToHex<L>(input, len)
+  }
+
+  if (typeof input === 'string') {
+    if (isPrefixedHexString(input)) {
+      const hex = input.slice(2) as HexString<L>
+
+      if (len && hex.length !== len) {
+        throw new TypeError(`Length mismatch for valid hex string. Expecting length ${len}: ${hex}`)
       }
+
+      return hex
+    } else {
+      // We use assertHexString() as there might be more reasons why a string is not valid hex string
+      // and usage of isHexString() would not give enough information to the user on what is going
+      // wrong.
+      assertHexString<L>(input, len)
+
+      return input
     }
-  
-    throw new TypeError('Not HexString compatible type!')
+  }
+
+  throw new TypeError('Not HexString compatible type!')
 }
 
 export function wrapBytesWithHelpers(data: Uint8Array): Data {

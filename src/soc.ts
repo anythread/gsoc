@@ -1,6 +1,6 @@
-import { Bytes, EthAddress, Signature, SignerFn } from "./types"
-import { Chunk, Utils } from "@fairdatasociety/bmt-js"
-import { hexToBytes, makeHexString, serializeBytes } from "./utils"
+import { Bytes, EthAddress, Signature, SignerFn } from './types'
+import { Chunk, Utils } from '@fairdatasociety/bmt-js'
+import { hexToBytes, makeHexString, serializeBytes } from './utils'
 
 type Identifier = Bytes<32>
 
