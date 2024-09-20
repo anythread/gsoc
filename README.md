@@ -98,9 +98,9 @@ npm run compile:types
 # Testing
 
 The testing needs running Bee client node for integration testing.
-You must set `BEE_POSTAGE` environment variable with a valid Postage batch.
+You should set `BEE_POSTAGE` and `BEE_POSTAGE_2` environment variable with valid Postage batch IDs.
 
-In order to test on different node than `http://localhost:1633`, set `BEE_DEBUG_API_URL` environment variable as well.
+In order to test on different node than `http://localhost:1633` and `http://localhost:11633`, set `BEE_API_URL` and `BEE_PEER_API_URL` environment variable, respectively.
 
 To run test execute
 
