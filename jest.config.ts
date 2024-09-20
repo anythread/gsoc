@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /*
  * For a detailed explanation regarding each configuration property and type check, visit:
  * https://jestjs.io/docs/en/configuration.html
@@ -7,17 +8,59 @@ import { BeeRequestOptions, createPostageBatch } from './src/http-client'
 
 const DEFAULT_BATCH_AMOUNT = '600000000'
 
+/**
+ * Returns a url for testing the Bee public API
+ */
+export function beeUrl(): string {
+  return process.env.BEE_API_URL || 'http://127.0.0.1:1633'
+}
+
+/**
+ * Returns a url of another peer for testing the Bee public API
+ */
+export function beePeerUrl(): string {
+  return process.env.BEE_PEER_API_URL || 'http://127.0.0.1:11633'
+}
+
+type BatchId = string
+
+/**
+ * Helper function that create monster batch for all the tests.
+ * There is semaphore mechanism that allows only creation of one batch across all the
+ * parallel running tests that have to wait until it is created.
+ */
+export function getPostageBatch(url = beeUrl(), index?: number): BatchId {
+  let stamp: BatchId
+
+  switch (url) {
+    case beeUrl():
+      stamp = process.env.BEE_POSTAGE as BatchId
+      if (index === 1) {
+        stamp = process.env.BEE_POSTAGE_2 as BatchId
+      }
+      break
+    case beePeerUrl():
+      stamp = process.env.BEE_PEER_POSTAGE as BatchId
+      break
+    default:
+      throw new Error('Unknown URL ' + url)
+  }
+
+  if (!stamp) {
+    throw new Error('There is no postage stamp configured for URL ' + url)
+  }
+
+  return stamp
+}
+
 export default async (): Promise<Config.InitialOptions> => {
   try {
     const beeRequestOptions: BeeRequestOptions = {
-      baseURL: process.env.BEE_API_URL || 'http://127.0.0.1:1633/',
-    }
-    const beePeerRequestOptions: BeeRequestOptions = {
-      baseURL: process.env.BEE_PEER_API_URL || 'http://127.0.0.1:11633/',
+      baseURL: beeUrl(),
     }
 
-    if (!process.env.BEE_POSTAGE || !process.env.BEE_PEER_POSTAGE) {
-      console.log('Creating postage stamps since BEE_POSTAGE or BEE_PEER_POSTAGE is not set...')
+    if (!process.env.BEE_POSTAGE || !process.env.BEE_POSTAGE_2) {
+      console.log('Creating postage stamps since BEE_POSTAGE or BEE_POSTAGE_2 is not set...')
 
       const stampsOrder: { requestOptions: BeeRequestOptions; env: string }[] = []
 
@@ -25,8 +68,8 @@ export default async (): Promise<Config.InitialOptions> => {
         stampsOrder.push({ requestOptions: beeRequestOptions, env: 'BEE_POSTAGE' })
       }
 
-      if (!process.env.BEE_PEER_POSTAGE) {
-        stampsOrder.push({ requestOptions: beePeerRequestOptions, env: 'BEE_PEER_POSTAGE' })
+      if (!process.env.BEE_POSTAGE_2) {
+        stampsOrder.push({ requestOptions: beeRequestOptions, env: 'BEE_POSTAGE_2' })
       }
 
       const stamps = await Promise.all(
