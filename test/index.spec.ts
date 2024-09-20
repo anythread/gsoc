@@ -19,9 +19,9 @@ describe('gsoc', () => {
   const gsoc2 = getGsocInstance(BEE_URL, getPostageBatch(BEE_URL, 1))
   const gsocPeer = getGsocInstance(BEE_PEER_URL)
 
-  it('send message with different postage batches', async () => {
+  it('send message with different postage batches sequentially', async () => {
     const beePeerOverlay = await getNodeAddresses({ baseURL: BEE_PEER_URL })
-    const { resourceId, gsocAddress } = gsoc.mineResourceId(beePeerOverlay.overlay, 2)
+    const { resourceId, gsocAddress } = gsoc.mineResourceId(beePeerOverlay.overlay, 1)
 
     const messages: string[] = []
 
@@ -50,6 +50,46 @@ describe('gsoc', () => {
     close()
 
     expect(messages).toEqual([
+      'message 1',
+      'message 2',
+      'message 3',
+      'message 4',
+      'message 5',
+      'message 6',
+      'message 7',
+    ])
+  })
+
+  it('send messages with different postage batches parallel', async () => {
+    const resourceId = 'test2'
+
+    const messages: string[] = []
+
+    const { close } = gsocPeer.listen(
+      {
+        onMessage: message => {
+          messages.push(message)
+        },
+        onError: error => {
+          throw error
+        },
+      },
+      resourceId,
+    )
+
+    await Promise.all([
+      gsoc.send('message 1', resourceId),
+      gsoc.send('message 2', resourceId),
+      gsoc2.send('message 3', resourceId),
+      gsoc.send('message 4', resourceId),
+      gsoc2.send('message 5', resourceId),
+      gsoc2.send('message 6', resourceId),
+      gsoc.send('message 7', resourceId),
+    ])
+
+    close()
+
+    expect(messages.sort()).toEqual([
       'message 1',
       'message 2',
       'message 3',
