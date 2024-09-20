@@ -122,7 +122,7 @@ export async function createPostageBatch(
   amount: string,
   depth: number,
   options?: PostageBatchOptions,
-): Promise<string> {
+): Promise<Postage> {
   const headers: Record<string, string> = requestOptions.headers || {}
   if (options?.gasPrice) {
     headers['gas-price'] = options.gasPrice.toString()
@@ -140,7 +140,64 @@ export async function createPostageBatch(
     headers,
   })
 
-  return response.data.batchID
+  if (options?.waitForUsable) {
+    const timeout = 100_000
+    for (let time = 0; time < timeout; time += 3_000) {
+      try {
+        const batch = await getPostageBatch(requestOptions, response.data.batchID as Postage)
+        if (batch.usable) {
+          break
+        }
+      } catch (e) {
+        // ignore errors and try again
+      }
+
+      await new Promise(resolve => setTimeout(resolve, 3_000)) // wait 3s
+    }
+  }
+
+  return response.data.batchID as Postage
+}
+
+/**
+ * list postage batches
+ * @returns postage batch id
+ */
+export async function listPostageBatches(requestOptions: BeeRequestOptions): Promise<PostageBatch[]> {
+  const response = await http<{
+    stamps: PostageBatch[]
+  }>({
+    ...requestOptions,
+    method: 'get',
+    url: 'stamps',
+    responseType: 'json',
+  })
+
+  return response.data.stamps
+}
+
+export async function getPostageBatch(
+  requestOptions: BeeRequestOptions,
+  postageBatchId: Postage,
+): Promise<PostageBatch> {
+  const response = await http<PostageBatch>({
+    ...requestOptions,
+    method: 'get',
+    url: `stamps/${postageBatchId}`,
+    responseType: 'json',
+  })
+
+  return response.data
+}
+
+export async function getNodeAddresses(requestOptions: BeeRequestOptions): Promise<NodeAddresses> {
+  const response = await http<NodeAddresses>({
+    ...requestOptions,
+    url: 'addresses',
+    responseType: 'json',
+  })
+
+  return response.data
 }
 
 function assertSubscriptionHandler(value: unknown): asserts value is SubscriptionHandler {
@@ -325,4 +382,33 @@ class BeeResponseError extends BeeError {
   ) {
     super(message)
   }
+}
+
+/**
+ * Interface representing Postage stamp batch.
+ */
+interface PostageBatch {
+  batchID: Postage
+  utilization: number
+  usable: boolean
+  label: '' | string
+  depth: number
+  amount: string
+  bucketDepth: number
+  blockNumber: number
+  immutableFlag: boolean
+  /**
+   * The time (in seconds) remaining until the batch expires; -1 signals that the batch never expires; 0 signals that the batch has already expired.
+   */
+  batchTTL: number
+
+  exists: boolean
+}
+
+interface NodeAddresses {
+  overlay: string
+  underlay: string[]
+  ethereum: string // 40 length hex string
+  publicKey: string // 66 length hex string
+  pssPublicKey: string // 66 length hex string
 }

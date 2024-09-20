@@ -341,3 +341,13 @@ export function wrapBytesWithHelpers(data: Uint8Array): Data {
     hex: () => bytesToHex(data),
   })
 }
+
+/**
+ * Returns true if two byte arrays are equal
+ *
+ * @param a Byte array to compare
+ * @param b Byte array to compare
+ */
+export function bytesEqual(a: Uint8Array, b: Uint8Array): boolean {
+  return a.length === b.length && a.every((value, index) => value === b[index])
+}
