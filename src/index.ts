@@ -33,7 +33,7 @@ export class InformationSignal<UserPayload = InformationSignalRecord> {
     this.assertGraffitiRecord = options?.consensus?.assertRecord ?? assertInformationSignalRecord
     this.consensusHash = keccak256Hash(options?.consensus?.id ?? DEFAULT_CONSENSUS_ID)
 
-    if (!isHexString(options?.postageBatchId)) {
+    if (!isHexString(this.postageBatchId)) {
       throw new Error('Postage batch ID has to be a hex string!')
     }
   }
