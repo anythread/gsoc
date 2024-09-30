@@ -17,7 +17,7 @@ const getGsocInstance = (beeUrl: string, postageBatchId?: string): InformationSi
 describe('gsoc', () => {
   const gsoc = getGsocInstance(BEE_URL)
   const gsoc2 = getGsocInstance(BEE_URL, getPostageBatch(BEE_URL, 1))
-  const gsocPeer = getGsocInstance(BEE_PEER_URL)
+  const gsocPeer = new InformationSignal(BEE_PEER_URL)
 
   it('send message with different postage batches sequentially', async () => {
     const beePeerOverlay = await getNodeAddresses({ baseURL: BEE_PEER_URL })

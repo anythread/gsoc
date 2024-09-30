@@ -72,20 +72,14 @@ export default async (): Promise<Config.InitialOptions> => {
         stampsOrder.push({ requestOptions: beeRequestOptions, env: 'BEE_POSTAGE_2' })
       }
 
-      const stamps = await Promise.all(
-        stampsOrder.map(async order =>
-          createPostageBatch(order.requestOptions, DEFAULT_BATCH_AMOUNT, 20, {
-            waitForUsable: true,
-          }),
-        ),
-      )
-
-      for (let i = 0; i < stamps.length; i++) {
-        process.env[stampsOrder[i].env] = stamps[i]
-        console.log(`export ${stampsOrder[i].env}=${stamps[i]}`)
+      for (const order of stampsOrder) {
+        const stamp = await createPostageBatch(order.requestOptions, DEFAULT_BATCH_AMOUNT, 20, {
+          waitForUsable: true,
+        })
+        // set env
+        process.env[order.env] = stamp
+        console.log(`export ${order.env}=${stamp}`)
       }
-
-      console.log('Waiting for the stamps to be usable')
     }
   } catch (e) {
     // It is possible that for unit tests the Bee nodes does not run
