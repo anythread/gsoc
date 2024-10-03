@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "Graffiti Several Owner Chunk implementation on Swarm network",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "prepare": "rimraf dist && npm run compile:types && npm run compile",
     "compile": "tsc",
@@ -33,7 +34,7 @@
     "url": "git+https://github.com/anythread/gsoc.git"
   },
   "dependencies": {
-    "@nugaon/bmt-js": "^3.0.1",
+    "@nugaon/bmt-js": "^3.0.2",
     "axios": "^1.7.2",
     "elliptic": "^6.5.6",
     "isomorphic-ws": "^5.0.0",
