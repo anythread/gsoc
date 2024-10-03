@@ -212,7 +212,10 @@ function isValidBeeUrl(url: unknown): url is URL {
     return urlObject.protocol === 'http:' || urlObject.protocol === 'https:'
   } catch (e) {
     // URL constructor throws TypeError if not valid URL
-    if (e instanceof TypeError || ((e as any).code !== null && (e as any).code === 'ERR_INVALID_URL')) {
+    if (
+      e instanceof TypeError ||
+      ((e as { code: string }).code !== null && (e as { code: string }).code === 'ERR_INVALID_URL')
+    ) {
       return false
     }
 

@@ -281,15 +281,7 @@ async function http<T>(config: AxiosRequestConfig): Promise<AxiosResponse<T>> {
     return response as AxiosResponse<T>
   } catch (e: unknown) {
     if (e instanceof AxiosError) {
-      throw new BeeResponseError(
-        e.message,
-        e.code,
-        e.status,
-        e.response?.status,
-        e.config,
-        e.request,
-        e.response,
-      )
+      throw new BeeResponseError(e.message, e.code, e.status, e.response?.status, e.config, e.response)
     }
     throw e
   }
@@ -377,7 +369,6 @@ class BeeResponseError extends BeeError {
     public axiosStatus?: number,
     public status?: number,
     public config?: AxiosRequestConfig,
-    public request?: any,
     public response?: AxiosResponse,
   ) {
     super(message)
