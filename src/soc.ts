@@ -1,5 +1,5 @@
 import { Bytes, EthAddress, Signature, SignerFn } from './types'
-import { Chunk, Utils } from '@fairdatasociety/bmt-js'
+import { Chunk, Utils } from '@nugaon/bmt-js'
 import { hexToBytes, makeHexString, serializeBytes } from './utils'
 
 type Identifier = Bytes<32>

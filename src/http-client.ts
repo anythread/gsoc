@@ -1,4 +1,4 @@
-import { makeChunk } from '@fairdatasociety/bmt-js'
+import { makeChunk } from '@nugaon/bmt-js'
 import WebSocket from 'isomorphic-ws'
 import { Bytes, Data, Postage, PostageBatchOptions, Reference, SignerFn } from './types'
 import { makeSingleOwnerChunk, SingleOwnerChunk } from './soc'

@@ -1,5 +1,5 @@
 import { Bytes, Data, HexString, PrefixedHexString, SignerFn } from './types'
-import { Utils } from '@fairdatasociety/bmt-js'
+import { Utils } from '@nugaon/bmt-js'
 // For ESM compatibility
 import pkg from 'elliptic'
 const { ec } = pkg
