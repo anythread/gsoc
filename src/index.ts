@@ -1,6 +1,6 @@
 import { gsocSubscribe, SubscriptionHandler, uploadSingleOwnerChunkData } from './http-client'
 import { makeSOCAddress, SingleOwnerChunk } from './soc'
-import { Bytes, Data, HexString, PostageBatchId, SignerFn } from './types'
+import { Bytes, Data, HexString, PostageBatchId, PostageStamp, SignerFn } from './types'
 import {
   bytesToHex,
   getConsensualPrivateKey,
@@ -21,7 +21,7 @@ const DEFAULT_CONSENSUS_ID = 'SimpleGraffiti:v1' // used at information signalin
  * InformationSignal is for reading and writing a GSOC topic
  */
 export class InformationSignal<UserPayload = InformationSignalRecord> {
-  public postageBatchId: PostageBatchId
+  public postage: PostageBatchId | PostageStamp
   private beeApiUrl: string
   /** Graffiti Identifier */
   private consensusHash: Bytes<32>
@@ -30,12 +30,12 @@ export class InformationSignal<UserPayload = InformationSignalRecord> {
   constructor(beeApiUrl: string, options?: BaseConstructorOptions<UserPayload>) {
     assertBeeUrl(beeApiUrl)
     this.beeApiUrl = beeApiUrl
-    this.postageBatchId = (options?.postageBatchId ?? DEFAULT_POSTAGE_BATCH_ID) as PostageBatchId
+    this.postage = (options?.postage ?? DEFAULT_POSTAGE_BATCH_ID) as PostageBatchId
     this.assertGraffitiRecord = options?.consensus?.assertRecord ?? assertInformationSignalRecord
     this.consensusHash = keccak256Hash(options?.consensus?.id ?? DEFAULT_CONSENSUS_ID)
 
-    if (!isHexString(this.postageBatchId)) {
-      throw new Error('Postage batch ID has to be a hex string!')
+    if (!isHexString(this.postage)) {
+      throw new Error('Postage batch id or postage stamp has to be a hex string!')
     }
   }
 
@@ -109,7 +109,7 @@ export class InformationSignal<UserPayload = InformationSignalRecord> {
 
     return uploadSingleOwnerChunkData(
       { baseURL: this.beeApiUrl },
-      this.postageBatchId,
+      this.postage,
       graffitiSigner,
       this.consensusHash,
       serializePayload(data),
@@ -256,9 +256,10 @@ interface BaseConstructorOptions<T = InformationSignalRecord> {
   }
   /**
    * Swarm Postage Batch ID which is only required when write happens
+   * It can be the serialized Postage Stamp as well (envelope API EP)
    * Default: 000000000000000000000000000000000000000000000
    */
-  postageBatchId?: string
+  postage?: string
   /**
    * API Url of the Ethereum Swarm Bee client
    * Default: http://localhost:1633

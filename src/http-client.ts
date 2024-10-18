@@ -17,7 +17,7 @@ import axios, { AxiosAdapter, AxiosError, AxiosRequestConfig, AxiosResponse } fr
  */
 export async function uploadSingleOwnerChunkData(
   requestOptions: BeeRequestOptions,
-  postageBatchId: PostageBatchId,
+  postageBatchId: PostageBatchId | PostageStamp,
   signer: SignerFn,
   identifier: Bytes<32>,
   payload: Uint8Array,
