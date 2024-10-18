@@ -1,6 +1,6 @@
 import { gsocSubscribe, SubscriptionHandler, uploadSingleOwnerChunkData } from './http-client'
 import { makeSOCAddress, SingleOwnerChunk } from './soc'
-import { Bytes, Data, HexString, Postage, SignerFn } from './types'
+import { Bytes, Data, HexString, PostageBatchId, SignerFn } from './types'
 import {
   bytesToHex,
   getConsensualPrivateKey,
@@ -13,14 +13,15 @@ import {
 } from './utils'
 
 export const DEFAULT_RESOURCE_ID = 'any'
-const DEFAULT_POSTAGE_BATCH_ID = '0000000000000000000000000000000000000000000000000000000000000000' as Postage
+const DEFAULT_POSTAGE_BATCH_ID =
+  '0000000000000000000000000000000000000000000000000000000000000000' as PostageBatchId
 const DEFAULT_CONSENSUS_ID = 'SimpleGraffiti:v1' // used at information signaling
 
 /**
  * InformationSignal is for reading and writing a GSOC topic
  */
 export class InformationSignal<UserPayload = InformationSignalRecord> {
-  public postageBatchId: Postage
+  public postageBatchId: PostageBatchId
   private beeApiUrl: string
   /** Graffiti Identifier */
   private consensusHash: Bytes<32>
@@ -29,7 +30,7 @@ export class InformationSignal<UserPayload = InformationSignalRecord> {
   constructor(beeApiUrl: string, options?: BaseConstructorOptions<UserPayload>) {
     assertBeeUrl(beeApiUrl)
     this.beeApiUrl = beeApiUrl
-    this.postageBatchId = (options?.postageBatchId ?? DEFAULT_POSTAGE_BATCH_ID) as Postage
+    this.postageBatchId = (options?.postageBatchId ?? DEFAULT_POSTAGE_BATCH_ID) as PostageBatchId
     this.assertGraffitiRecord = options?.consensus?.assertRecord ?? assertInformationSignalRecord
     this.consensusHash = keccak256Hash(options?.consensus?.id ?? DEFAULT_CONSENSUS_ID)
 

@@ -1,4 +1,4 @@
-import { Bytes, Data, HexString, PrefixedHexString, SignerFn } from './types'
+import { Bytes, Data, HexString, PostageBatchId, PostageStamp, PrefixedHexString, SignerFn } from './types'
 import { Utils } from '@nugaon/bmt-js'
 // For ESM compatibility
 import pkg from 'elliptic'
@@ -17,6 +17,14 @@ export function getConsensualPrivateKey(resource: string | Uint8Array): Bytes<32
   }
 
   return keccak256Hash(resource)
+}
+
+export function isPostageBatchId(value: unknown): value is PostageBatchId {
+  return isHexString(value) && value.length === 64
+}
+
+export function isPostageStamp(value: unknown): value is PostageStamp {
+  return isHexString(value) && value.length === 113
 }
 
 function publicKeyToAddress(pubBytes: number[]): Bytes<20> {

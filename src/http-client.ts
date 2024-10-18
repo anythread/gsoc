@@ -1,8 +1,15 @@
 import { makeChunk } from '@nugaon/bmt-js'
 import WebSocket from 'isomorphic-ws'
-import { Bytes, Data, Postage, PostageBatchOptions, Reference, SignerFn } from './types'
+import { Bytes, Data, PostageBatchId, PostageBatchOptions, PostageStamp, Reference, SignerFn } from './types'
 import { makeSingleOwnerChunk, SingleOwnerChunk } from './soc'
-import { bytesToHex, isStrictlyObject, serializeBytes, wrapBytesWithHelpers } from './utils'
+import {
+  bytesToHex,
+  isPostageBatchId,
+  isPostageStamp,
+  isStrictlyObject,
+  serializeBytes,
+  wrapBytesWithHelpers,
+} from './utils'
 import axios, { AxiosAdapter, AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios'
 
 /**
@@ -10,7 +17,7 @@ import axios, { AxiosAdapter, AxiosError, AxiosRequestConfig, AxiosResponse } fr
  */
 export async function uploadSingleOwnerChunkData(
   requestOptions: BeeRequestOptions,
-  postageBatchId: Postage,
+  postageBatchId: PostageBatchId,
   signer: SignerFn,
   identifier: Bytes<32>,
   payload: Uint8Array,
@@ -94,7 +101,7 @@ async function uploadSoc(
   identifier: string,
   signature: string,
   data: Uint8Array,
-  postageBatchId: Postage,
+  postage: PostageBatchId | PostageStamp,
   options?: UploadOptions,
 ): Promise<Reference> {
   const response = await http<ReferenceResponse>({
@@ -104,7 +111,7 @@ async function uploadSoc(
     data,
     headers: {
       'content-type': 'application/octet-stream',
-      ...extractUploadHeaders(postageBatchId, options),
+      ...extractUploadHeaders(postage, options),
     },
     responseType: 'json',
     params: { sig: signature },
@@ -122,7 +129,7 @@ export async function createPostageBatch(
   amount: string,
   depth: number,
   options?: PostageBatchOptions,
-): Promise<Postage> {
+): Promise<PostageBatchId> {
   const headers: Record<string, string> = requestOptions.headers || {}
   if (options?.gasPrice) {
     headers['gas-price'] = options.gasPrice.toString()
@@ -144,7 +151,7 @@ export async function createPostageBatch(
     const timeout = 100_000
     for (let time = 0; time < timeout; time += 3_000) {
       try {
-        const batch = await getPostageBatch(requestOptions, response.data.batchID as Postage)
+        const batch = await getPostageBatch(requestOptions, response.data.batchID as PostageBatchId)
         if (batch.usable) {
           break
         }
@@ -156,7 +163,7 @@ export async function createPostageBatch(
     }
   }
 
-  return response.data.batchID as Postage
+  return response.data.batchID as PostageBatchId
 }
 
 /**
@@ -178,7 +185,7 @@ export async function listPostageBatches(requestOptions: BeeRequestOptions): Pro
 
 export async function getPostageBatch(
   requestOptions: BeeRequestOptions,
-  postageBatchId: Postage,
+  postageBatchId: PostageBatchId,
 ): Promise<PostageBatch> {
   const response = await http<PostageBatch>({
     ...requestOptions,
@@ -238,13 +245,20 @@ function webSocket(url: string, path: string): WebSocket {
   return new WebSocket(`${wsUrl}/${path}`)
 }
 
-function extractUploadHeaders(postageBatchId: Postage, options?: UploadOptions): Record<string, string> {
-  if (!postageBatchId) {
-    throw new BeeError('Postage BatchID has to be specified!')
-  }
+function extractUploadHeaders(
+  postage: PostageBatchId | PostageStamp,
+  options?: UploadOptions,
+): Record<string, string> {
+  const headers: Record<string, string> = {}
 
-  const headers: Record<string, string> = {
-    'swarm-postage-batch-id': postageBatchId,
+  if (isPostageBatchId(postage)) {
+    headers['swarm-postage-batch-id'] = postage
+  } else if (isPostageStamp(postage)) {
+    headers['swarm-postage-stamp'] = postage
+  } else {
+    throw Error(
+      'Postage is invalid. Define either a postage batch id or a postage stamp (coming from envelope)',
+    )
   }
 
   if (options?.pin) {
@@ -379,7 +393,7 @@ class BeeResponseError extends BeeError {
  * Interface representing Postage stamp batch.
  */
 interface PostageBatch {
-  batchID: Postage
+  batchID: PostageBatchId
   utilization: number
   usable: boolean
   label: '' | string
