@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://www.github.com/anythread/gsoc/compare/v0.1.0...v0.2.0) (2024-10-18)
+
+
+### Features
+
+* postage stamp support ([50f4d78](https://www.github.com/anythread/gsoc/commit/50f4d78e19270b24604383f3a721433d98892a14))
+
 ## 0.1.0 (2024-10-03)
 
 
