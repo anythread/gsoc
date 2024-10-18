@@ -1,5 +1,12 @@
 # Changelog
 
+### [0.2.2](https://www.github.com/anythread/gsoc/compare/v0.2.1...v0.2.2) (2024-10-18)
+
+
+### Bug Fixes
+
+* is postage stamp ([f09d579](https://www.github.com/anythread/gsoc/commit/f09d579a9b83be6430197ed988e5bb210883e8ee))
+
 ### [0.2.1](https://www.github.com/anythread/gsoc/compare/v0.2.0...v0.2.1) (2024-10-18)
 
 

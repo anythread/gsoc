@@ -1,6 +1,6 @@
 {
   "name": "@anythread/gsoc",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Graffiti Several Owner Chunk implementation on Swarm network",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
