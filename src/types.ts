@@ -38,7 +38,7 @@ export type SignerFn = {
 
 export type PostageBatchId = HexString<64>
 
-export type PostageStamp = HexString<113>
+export type PostageStamp = HexString<226>
 
 export interface Bytes<Length extends number> extends Uint8Array {
   readonly length: Length

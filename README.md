@@ -55,7 +55,7 @@ Information Signal class facilitates GSOC data reading based on the passed conse
 import { InformationSignal } from '@anythread/gsoc'
 
 beeUrl = 'http://localhost:1633' // Bee API URL to connect p2p storage network
-postage = '0000000000000000000000000000000000000000000000000000000000000000' // for write operations, the Postage Batch ID (64 length hex) or a Postage Stamp (113 length hex) must be set 
+postage = '0000000000000000000000000000000000000000000000000000000000000000' // for write operations, the Postage Batch ID (64 length hex) or a Postage Stamp (226 length hex) must be set 
 resourceId = 'demo' // any string/content hash that represents the resource to which the Personal Storage record will be associated.
 
 // initialize object that will read and write the GSOC according to the passed consensus/configuration

@@ -24,7 +24,7 @@ export function isPostageBatchId(value: unknown): value is PostageBatchId {
 }
 
 export function isPostageStamp(value: unknown): value is PostageStamp {
-  return isHexString(value) && value.length === 113
+  return isHexString(value) && value.length === 226
 }
 
 function publicKeyToAddress(pubBytes: number[]): Bytes<20> {
