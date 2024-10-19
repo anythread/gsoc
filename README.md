@@ -11,7 +11,6 @@ Missing feature is the reading part though the communication is possible by runn
 
 # Install
 
-** NPM release will be available later, [compile](#Compilation) the project instead! **
 ```sh
 npm install @anythread/gsoc --save
 ```
