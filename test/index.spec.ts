@@ -94,7 +94,15 @@ describe('gsoc', () => {
     close()
 
     // two different postage batches with two updates (new GSOC postage timestamp can be smaller than the previous GSOC's timestamp)
-    expect(messages.length).toBeGreaterThanOrEqual(4)
+    expect(messages.sort()).toEqual([
+      'message 1',
+      'message 2',
+      'message 3',
+      'message 4',
+      'message 5',
+      'message 6',
+      'message 7',
+    ])
   })
 })
 
