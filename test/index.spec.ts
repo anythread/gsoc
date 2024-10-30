@@ -8,7 +8,7 @@ const BEE_PEER_URL = beePeerUrl()
 const getGsocInstance = (beeUrl: string, postageBatchId?: string): InformationSignal => {
   postageBatchId ||= getPostageBatch(beeUrl)
   const gsoc = new InformationSignal(beeUrl, {
-    postageBatchId: postageBatchId,
+    postage: postageBatchId,
   })
 
   return gsoc
