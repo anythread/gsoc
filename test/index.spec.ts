@@ -21,7 +21,7 @@ describe('gsoc', () => {
 
   it('send messages with different postage batches sequentially', async () => {
     const beePeerOverlay = await getNodeAddresses({ baseURL: BEE_PEER_URL })
-    const { resourceId, gsocAddress } = gsoc.mineResourceId(beePeerOverlay.overlay, 1)
+    const { resourceId, gsocAddress } = gsoc.mineResourceId(beePeerOverlay.overlay, 11)
 
     const messages: string[] = []
 
